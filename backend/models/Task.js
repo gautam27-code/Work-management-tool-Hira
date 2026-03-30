@@ -12,7 +12,6 @@ const taskSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Description of what the task involves
     description: {
       type: String,
       trim: true,
@@ -25,7 +24,7 @@ const taskSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Progress percentage (0 to 100)
+    // Progress percentage
     progress: {
       type: Number,
       default: 0,
