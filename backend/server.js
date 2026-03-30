@@ -1,3 +1,4 @@
+// ============================
 // server.js - Main Entry Point
 // ============================
 // This is the main file that starts the Express server
@@ -12,8 +13,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 // Import routes
-const taskRoutes = require("./routes/taskRoutes");
 const authRoutes = require("./routes/authRoutes");
+const taskRoutes = require("./routes/taskRoutes");
+const teamRoutes = require("./routes/teamRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 // Create Express app
 const app = express();
@@ -27,8 +30,12 @@ app.use(express.json());
 // ---- Routes ----
 // Auth routes (login, signup)
 app.use("/api/auth", authRoutes);
-// All task-related routes start with /api/tasks
+// Team routes (create, list, invite, join)
+app.use("/api/teams", teamRoutes);
+// Task routes (create, list by team, update)
 app.use("/api/tasks", taskRoutes);
+// Message routes (send, list by team)
+app.use("/api/messages", messageRoutes);
 
 // Simple test route
 app.get("/", (req, res) => {

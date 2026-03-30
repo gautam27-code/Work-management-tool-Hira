@@ -28,12 +28,13 @@ const protect = async (req, res, next) => {
       next(); // Continue to the next middleware/route
     } catch (error) {
       console.error("Auth middleware error:", error.message);
-      res.status(401).json({ message: "Not authorized, invalid token" });
+      return res.status(401).json({ message: "Not authorized, invalid token" });
     }
   }
 
+  // If no token was found in the header, reject the request
   if (!token) {
-    res.status(401).json({ message: "Not authorized, no token provided" });
+    return res.status(401).json({ message: "Not authorized, no token provided" });
   }
 };
 

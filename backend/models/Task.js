@@ -1,8 +1,11 @@
-// Each task has a title, description, deadline, progress, and completed status.
+// ============================
+// Task Model
+// ============================
+// Each task belongs to a team, is created by a user,
+// and can be assigned to a specific team member.
 
 const mongoose = require("mongoose");
 
-// Define the schema (blueprint) for a Task
 const taskSchema = new mongoose.Schema(
   {
     // Title of the task (required)
@@ -12,6 +15,7 @@ const taskSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Optional description
     description: {
       type: String,
       trim: true,
@@ -24,7 +28,7 @@ const taskSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Progress percentage
+    // Progress percentage (0-100)
     progress: {
       type: Number,
       default: 0,
@@ -37,6 +41,27 @@ const taskSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // Which team this task belongs to (required)
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      required: [true, "Task must belong to a team"],
+    },
+
+    // Which user this task is assigned to (optional)
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    // Who created this task
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   {
     // Automatically add createdAt and updatedAt timestamps
@@ -44,7 +69,6 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
-// Create the model from the schema
 const Task = mongoose.model("Task", taskSchema);
 
 module.exports = Task;

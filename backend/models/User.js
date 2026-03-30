@@ -1,7 +1,7 @@
 // ============================
 // User Model
 // ============================
-// Defines the User schema with email and hashed password.
+// Defines the User schema with email, hashed password, and teams.
 // Passwords are automatically hashed before saving using bcrypt.
 
 const mongoose = require("mongoose");
@@ -31,6 +31,14 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
     },
+
+    // Teams this user belongs to
+    teams: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team",
+      },
+    ],
   },
   {
     timestamps: true,

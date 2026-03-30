@@ -2,7 +2,7 @@
 // TaskCard Component
 // ============================
 // Displays a single task as a card with title, description,
-// deadline, progress bar, and status controls.
+// deadline, progress bar, assigned user, and status controls.
 
 function TaskCard({ task, onToggleComplete, onUpdateProgress }) {
   // Format the deadline date to a readable string
@@ -27,6 +27,12 @@ function TaskCard({ task, onToggleComplete, onUpdateProgress }) {
     if (task.progress >= 25) return "bg-[#f59e0b]";
     return "bg-[#94a3b8]";
   };
+
+  // Get the first letter of the assigned user's name
+  const assignedName = task.assignedTo?.name || "Unassigned";
+  const assignedInitial = task.assignedTo?.name
+    ? task.assignedTo.name.charAt(0).toUpperCase()
+    : "?";
 
   return (
     <div
@@ -100,6 +106,20 @@ function TaskCard({ task, onToggleComplete, onUpdateProgress }) {
         </p>
       )}
 
+      {/* Assigned User */}
+      <div className="flex items-center gap-2 mb-3">
+        <div
+          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+            task.assignedTo
+              ? "bg-gradient-to-br from-[#6366f1] to-[#ec4899] text-white"
+              : "bg-[#334155] text-[#64748b]"
+          }`}
+        >
+          {assignedInitial}
+        </div>
+        <span className="text-sm text-[#94a3b8]">{assignedName}</span>
+      </div>
+
       {/* Deadline */}
       <div className="flex items-center gap-2 mb-4">
         <svg className={`w-4 h-4 ${isOverdue ? "text-[#ef4444]" : "text-[#94a3b8]"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +138,6 @@ function TaskCard({ task, onToggleComplete, onUpdateProgress }) {
             {task.progress}%
           </span>
         </div>
-        {/* Progress Bar */}
         <div className="w-full h-2 bg-[#0f172a] rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${getProgressColor()}`}

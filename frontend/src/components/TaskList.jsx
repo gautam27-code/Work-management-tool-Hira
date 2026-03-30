@@ -19,7 +19,7 @@ function TaskList({ tasks, onToggleComplete, onUpdateProgress }) {
         </div>
         <h3 className="text-xl font-bold text-white mb-2">No tasks yet</h3>
         <p className="text-[#94a3b8] text-center max-w-sm">
-          Click the <span className="text-[#6366f1] font-medium">"Create Task"</span> button to add your first task and start managing your work!
+          Click the <span className="text-[#6366f1] font-medium">"Create Task"</span> button to add your first task!
         </p>
       </div>
     );
@@ -30,14 +30,14 @@ function TaskList({ tasks, onToggleComplete, onUpdateProgress }) {
       {/* Section Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-white">Your Tasks</h2>
+          <h2 className="text-2xl font-bold text-white">Team Tasks</h2>
           <p className="text-sm text-[#94a3b8] mt-1">
             {tasks.length} task{tasks.length !== 1 ? "s" : ""} total
           </p>
         </div>
       </div>
 
-      {/* Task Grid - responsive columns */}
+      {/* Task Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {tasks.map((task) => (
           <TaskCard

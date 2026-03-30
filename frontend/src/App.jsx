@@ -1,28 +1,33 @@
 // ============================
 // App.jsx - Main Application Router
 // ============================
-// This is the root component that handles routing between pages.
-// - "/" → Dashboard (protected, requires login)
-// - "/login" → Login page
-// - "/signup" → Signup page
+// Routes:
+// - "/"            → Dashboard (teams overview)
+// - "/login"       → Login page
+// - "/signup"      → Signup page
+// - "/team/:teamId" → Team workspace page
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import TeamPage from "./pages/TeamPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Dashboard - main page after login */}
+        {/* Dashboard - shows user's teams */}
         <Route path="/" element={<Dashboard />} />
+
+        {/* Team workspace - tasks + chat */}
+        <Route path="/team/:teamId" element={<TeamPage />} />
 
         {/* Auth pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Catch-all: redirect unknown routes to dashboard */}
+        {/* Catch-all: redirect to dashboard */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

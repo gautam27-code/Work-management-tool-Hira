@@ -1,66 +1,117 @@
-// POST   /api/tasks      → Create a new task
-// GET    /api/tasks      → Get all tasks
-// PUT    /api/tasks/:id  → Update a task (progress, completed, etc.)
+// ============================
+// Task Routes (Team-Scoped)
+// ============================
+// POST   /api/tasks           → Create a new task (requires teamId)
+// GET    /api/tasks/:teamId   → Get all tasks for a team
+// PUT    /api/tasks/:id       → Update a task (progress, completed, assignedTo)
 
 const express = require("express");
 const router = express.Router();
 const Task = require("../models/Task");
+const Team = require("../models/Team");
+const { protect } = require("../middleware/authMiddleware");
+
+// All task routes require authentication
+router.use(protect);
 
 // ---- POST /api/tasks ----
-// Create a new task
+// Create a new task inside a team
 router.post("/", async (req, res) => {
   try {
-    // Get task data from request body
-    const { title, description, deadline, progress } = req.body;
+    const { title, description, deadline, progress, teamId, assignedTo } = req.body;
 
-    // Create a new task in the database
+    if (!teamId) {
+      return res.status(400).json({ message: "Team ID is required to create a task" });
+    }
+
+    // Verify the user is a member of this team
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    if (!team.members.includes(req.user._id)) {
+      return res.status(403).json({ message: "You are not a member of this team" });
+    }
+
+    // Create the task
     const newTask = await Task.create({
       title,
       description,
       deadline,
       progress: progress || 0,
       completed: false,
+      team: teamId,
+      assignedTo: assignedTo || null,
+      createdBy: req.user._id,
     });
 
-    // Send back status 201 (Created)
-    res.status(201).json(newTask);
+    // Populate references before sending back
+    const populatedTask = await Task.findById(newTask._id)
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email");
+
+    res.status(201).json(populatedTask);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// ---- GET /api/tasks ----
-// Get all tasks (sorted by newest first)
-router.get("/", async (req, res) => {
+// ---- GET /api/tasks/:teamId ----
+// Get all tasks for a specific team
+router.get("/:teamId", async (req, res) => {
   try {
-    // Fetch all tasks, newest first
-    const tasks = await Task.find().sort({ createdAt: -1 });
+    const { teamId } = req.params;
 
-    res.status(200).json(tasks);
+    // Verify the user is a member of this team
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    if (!team.members.includes(req.user._id)) {
+      return res.status(403).json({ message: "You are not a member of this team" });
+    }
+
+    // Fetch all tasks for this team, newest first
+    const tasks = await Task.find({ team: teamId })
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 // ---- PUT /api/tasks/:id ----
-// change progress or mark as completed)
+// Update a task (progress, completed, assignedTo, etc.)
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // { new: true } returns the updated document
-    const updatedTask = await Task.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    // task not found
-    if (!updatedTask) {
+    // Find the task first to check team membership
+    const task = await Task.findById(id);
+    if (!task) {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    // Send updated task
-    res.status(200).json(updatedTask);
+    // Verify the user is a member of the task's team
+    const team = await Team.findById(task.team);
+    if (!team || !team.members.includes(req.user._id)) {
+      return res.status(403).json({ message: "You are not a member of this team" });
+    }
+
+    // Update the task
+    const updatedTask = await Task.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    })
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email");
+
+    res.json(updatedTask);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
