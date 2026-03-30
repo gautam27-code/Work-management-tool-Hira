@@ -1,6 +1,3 @@
-// ============================
-// Navbar Component
-// ============================
 // Displays the top navigation bar with app name and user section.
 
 function Navbar() {

@@ -1,4 +1,3 @@
-// A modal form to create a new task.
 // Props:
 //   onClose      - function to close the modal
 //   onTaskCreated - function called after a task is successfully created
@@ -116,7 +115,6 @@ function CreateTask({ onClose, onTaskCreated }) {
 
           {/* Deadline & Progress Row */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Deadline Input */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-[#94a3b8]">Deadline</label>
               <input

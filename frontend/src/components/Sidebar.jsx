@@ -19,7 +19,7 @@ function Sidebar({ onCreateClick, taskCount, completedCount }) {
           </svg>
           Create Task
         </button>
-
+        
         {/* Quick Stats */}
         <div className="space-y-3">
           <h3 className="text-xs font-semibold text-[#94a3b8] uppercase tracking-wider">Overview</h3>
