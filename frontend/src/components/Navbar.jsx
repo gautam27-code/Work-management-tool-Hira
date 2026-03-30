@@ -1,6 +1,15 @@
-// Displays the top navigation bar with app name and user section.
+// ============================
+// Navbar Component
+// ============================
+// Displays the top navigation bar with app name, user info, and logout button.
+// Props:
+//   user   - the logged-in user object { name, email, ... }
+//   onLogout - function to call when the logout button is clicked
 
-function Navbar() {
+function Navbar({ user, onLogout }) {
+  // Get the first letter of the user's name for the avatar
+  const initial = user?.name ? user.name.charAt(0).toUpperCase() : "?";
+
   return (
     <nav className="sticky top-0 z-50 bg-[#1e293b]/80 backdrop-blur-xl border-b border-[#334155]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,7 +28,7 @@ function Navbar() {
             </span>
           </div>
 
-          {/* User Section (static for now) */}
+          {/* User Section */}
           <div className="flex items-center gap-3">
             {/* Notification bell */}
             <button className="p-2 rounded-lg hover:bg-[#334155] transition-colors text-[#94a3b8] hover:text-white">
@@ -29,12 +38,25 @@ function Navbar() {
             </button>
 
             {/* User avatar and name */}
-            <div className="flex items-center gap-2 bg-[#334155] rounded-full pl-1 pr-3 py-1 hover:bg-[#475569] transition-colors cursor-pointer">
+            <div className="flex items-center gap-2 bg-[#334155] rounded-full pl-1 pr-3 py-1">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366f1] to-[#ec4899] flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">G</span>
+                <span className="text-white text-sm font-semibold">{initial}</span>
               </div>
-              <span className="text-sm font-medium text-[#f1f5f9]">Gautam</span>
+              <span className="text-sm font-medium text-[#f1f5f9]">
+                {user?.name || "User"}
+              </span>
             </div>
+
+            {/* Logout button */}
+            <button
+              onClick={onLogout}
+              className="p-2 rounded-lg hover:bg-[#ef4444]/20 transition-colors text-[#94a3b8] hover:text-[#ef4444] cursor-pointer"
+              title="Logout"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

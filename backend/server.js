@@ -1,4 +1,3 @@
-// ============================
 // server.js - Main Entry Point
 // ============================
 // This is the main file that starts the Express server
@@ -12,8 +11,9 @@ const dotenv = require("dotenv");
 // Load environment variables from .env file
 dotenv.config();
 
-// Import task routes
+// Import routes
 const taskRoutes = require("./routes/taskRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 // Create Express app
 const app = express();
@@ -25,10 +25,12 @@ app.use(cors());
 app.use(express.json());
 
 // ---- Routes ----
+// Auth routes (login, signup)
+app.use("/api/auth", authRoutes);
 // All task-related routes start with /api/tasks
 app.use("/api/tasks", taskRoutes);
 
-// ---- Simple test route ----
+// Simple test route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Hira API! 🚀" });
 });

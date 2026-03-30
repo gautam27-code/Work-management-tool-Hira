@@ -1,167 +1,31 @@
 // ============================
-// App.jsx - Main Application Component
+// App.jsx - Main Application Router
 // ============================
-// This is the root component that brings everything together.
-// It manages the global state (tasks list) and API calls.
+// This is the root component that handles routing between pages.
+// - "/" → Dashboard (protected, requires login)
+// - "/login" → Login page
+// - "/signup" → Signup page
 
-import { useState, useEffect } from "react";
-import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
-import TaskList from "./components/TaskList";
-import CreateTask from "./components/CreateTask";
-
-// Backend API URL - change this if your backend runs on a different port
-const API_URL = "http://localhost:5000/api/tasks";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 function App() {
-  // ---- State ----
-  const [tasks, setTasks] = useState([]);          // Array of all tasks
-  const [showCreateForm, setShowCreateForm] = useState(false); // Toggle create form modal
-  const [loading, setLoading] = useState(true);    // Loading state for initial fetch
-  const [error, setError] = useState("");          // Error message
-
-  // ---- Fetch all tasks when the app loads ----
-  useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  // Function to fetch all tasks from the backend
-  const fetchTasks = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(API_URL);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch tasks");
-      }
-
-      const data = await response.json();
-      setTasks(data);
-    } catch (err) {
-      setError("Could not load tasks. Make sure the backend server is running!");
-      console.error("Fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ---- Handler: Add a newly created task to the list ----
-  const handleTaskCreated = (newTask) => {
-    // Add new task to the beginning of the array
-    setTasks((prevTasks) => [newTask, ...prevTasks]);
-  };
-
-  // ---- Handler: Toggle task completion status ----
-  const handleToggleComplete = async (taskId, completed) => {
-    try {
-      const response = await fetch(`${API_URL}/${taskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          completed,
-          progress: completed ? 100 : 0,  // Set progress to 100 when completed
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update task");
-
-      const updatedTask = await response.json();
-
-      // Update the task in our local state
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => (task._id === taskId ? updatedTask : task))
-      );
-    } catch (err) {
-      console.error("Update error:", err);
-    }
-  };
-
-  // ---- Handler: Update task progress ----
-  const handleUpdateProgress = async (taskId, progress) => {
-    try {
-      const response = await fetch(`${API_URL}/${taskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ progress }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update progress");
-
-      const updatedTask = await response.json();
-
-      // Update the task in our local state
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => (task._id === taskId ? updatedTask : task))
-      );
-    } catch (err) {
-      console.error("Progress update error:", err);
-    }
-  };
-
-  // Calculate stats for the sidebar
-  const completedCount = tasks.filter((t) => t.completed).length;
-
   return (
-    <div className="min-h-screen bg-[#0f172a]">
-      {/* Top Navigation Bar */}
-      <Navbar />
+    <BrowserRouter>
+      <Routes>
+        {/* Dashboard - main page after login */}
+        <Route path="/" element={<Dashboard />} />
 
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <Sidebar
-            onCreateClick={() => setShowCreateForm(true)}
-            taskCount={tasks.length}
-            completedCount={completedCount}
-          />
+        {/* Auth pages */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-          {/* Main Content - Task List */}
-          <main className="flex-1">
-            {/* Loading State */}
-            {loading && (
-              <div className="flex items-center justify-center py-20">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-10 h-10 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-[#94a3b8]">Loading tasks...</p>
-                </div>
-              </div>
-            )}
-
-            {/* Error State */}
-            {error && !loading && (
-              <div className="p-6 rounded-2xl bg-[#ef4444]/10 border border-[#ef4444]/20 text-center animate-fade-in">
-                <p className="text-[#ef4444] font-medium mb-2">⚠️ Connection Error</p>
-                <p className="text-[#94a3b8] text-sm mb-4">{error}</p>
-                <button
-                  onClick={fetchTasks}
-                  className="px-4 py-2 rounded-xl bg-[#334155] text-white hover:bg-[#475569] transition-colors cursor-pointer"
-                >
-                  Try Again
-                </button>
-              </div>
-            )}
-
-            {/* Task List */}
-            {!loading && !error && (
-              <TaskList
-                tasks={tasks}
-                onToggleComplete={handleToggleComplete}
-                onUpdateProgress={handleUpdateProgress}
-              />
-            )}
-          </main>
-        </div>
-      </div>
-
-      {/* Create Task Modal - shown when showCreateForm is true */}
-      {showCreateForm && (
-        <CreateTask
-          onClose={() => setShowCreateForm(false)}
-          onTaskCreated={handleTaskCreated}
-        />
-      )}
-    </div>
+        {/* Catch-all: redirect unknown routes to dashboard */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
