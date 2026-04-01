@@ -97,3 +97,74 @@ The app opens at `http://localhost:5173`
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB (Mongoose)
 - **Styling:** Dark theme, glassmorphism, animations
+
+# Hira Project Setup
+
+Follow these steps to clone, install dependencies, and run the project successfully.
+
+## Prerequisites
+- Node.js (v16 or higher)
+- MongoDB (installed and running locally or a remote instance)
+- Git
+
+## Steps to Clone and Run the Project
+
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd Hira.
+```
+
+### 2. Backend Setup
+1. Navigate to the `backend` folder:
+   ```bash
+   cd backend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file:
+   ```bash
+   echo PORT=5000 > .env
+   echo MONGO_URI=mongodb://127.0.0.1:27017/hira >> .env
+   ```
+
+### 3. Frontend Setup
+1. Navigate to the `frontend` folder:
+   ```bash
+   cd ../frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. (Optional) Create a `.env` file if needed:
+   ```bash
+   echo VITE_API_URL=http://localhost:5000 > .env
+   ```
+
+### 4. Build Frontend (for Production)
+If you need to build the frontend for production:
+```bash
+npm run build
+```
+
+### 5. Run the Application
+1. Start the backend server:
+   ```bash
+   cd backend
+   npm start
+   ```
+2. Start the frontend development server:
+   ```bash
+   cd ../frontend
+   npm run dev
+   ```
+
+### 6. Verify MongoDB
+Ensure MongoDB is running locally or update the `MONGO_URI` in the `.env` file to point to a remote MongoDB instance.
+
+### 7. Access the Application
+- Frontend: Open [http://localhost:5173](http://localhost:5173) in your browser.
+- Backend API: Test the API at [http://localhost:5000](http://localhost:5000).

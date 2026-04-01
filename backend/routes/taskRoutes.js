@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
     if (!teamId) {
       return res.status(400).json({ message: "Team ID is required to create a task" });
     }
-
+    
     // Verify the user is a member of this team
     const team = await Team.findById(teamId);
     if (!team) {
