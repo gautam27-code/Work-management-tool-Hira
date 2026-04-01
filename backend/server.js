@@ -37,9 +37,10 @@ app.use("/api/tasks", taskRoutes);
 // Message routes (send, list by team)
 app.use("/api/messages", messageRoutes);
 
+
 // Simple test route
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to Hira API! 🚀" });
+  res.json({ message: "Welcome to Hira API!" });
 });
 
 // ---- Connect to MongoDB and Start Server ----
@@ -49,12 +50,12 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/hira";
 mongoose
   .connect(MONGO_URI)
   .then(() => {
-    console.log("✅ Connected to MongoDB successfully!");
+    console.log("Connected to MongoDB successfully!");
     // Start the server only after DB connection is successful
     app.listen(PORT, () => {
-      console.log(`🚀 Server is running on http://localhost:${PORT}`);
+      console.log(`Server is running on http://localhost:${PORT}`);
     });
   })
   .catch((error) => {
-    console.error("❌ MongoDB connection error:", error.message);
+    console.error("MongoDB connection error:", error.message);
   });
