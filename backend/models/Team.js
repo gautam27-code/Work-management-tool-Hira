@@ -1,6 +1,3 @@
-// ============================
-// Team Model
-// ============================
 // A team is a collaborative workspace.
 // It has an owner, a list of members, and pending email invites.
 

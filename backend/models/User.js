@@ -1,6 +1,3 @@
-// ============================
-// User Model
-// ============================
 // Defines the User schema with email, hashed password, and teams.
 // Passwords are automatically hashed before saving using bcrypt.
 

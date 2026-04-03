@@ -1,6 +1,3 @@
-// ============================
-// Task Model
-// ============================
 // Each task belongs to a team, is created by a user,
 // and can be assigned to a specific team member.
 

@@ -1,6 +1,4 @@
-// ============================
 // Message Routes
-// ============================
 // POST   /api/messages           → Send a message in a team
 // GET    /api/messages/:teamId   → Get all messages for a team
 
@@ -15,7 +13,6 @@ router.use(protect);
 
 // ---- POST /api/messages ----
 // Send a message in a team chat
-// Body: { teamId, text }
 router.post("/", async (req, res) => {
   try {
     const { teamId, text } = req.body;
