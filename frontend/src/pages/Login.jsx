@@ -9,7 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import useStore from "../store/store";
 
 // Backend auth URL
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/auth`;
 
 function Login() {
   const navigate = useNavigate();

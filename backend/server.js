@@ -32,6 +32,16 @@ const io = new Server(server, {
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
+  handlePreflightRequest: (req, res) => {
+    res.writeHead(200, {
+      "Access-Control-Allow-Origin": req.headers.origin || "*",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE",
+      "Access-Control-Allow-Headers": req.headers["access-control-request-headers"] || "content-type",
+      "Access-Control-Allow-Private-Network": "true",
+      "Access-Control-Allow-Credentials": "true",
+    });
+    res.end();
+  },
 });
 
 io.on("connection", (socket) => {
@@ -64,8 +74,15 @@ app.use((req, res, next) => {
 });
 
 // ---- Middleware ----
-// Enable CORS so frontend can talk to backend
-app.use(cors());
+// Allow Private Network Access (PNA) preflight requests
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Private-Network", "true");
+  next();
+});
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 // Parse incoming JSON requests
 app.use(express.json());
 
@@ -95,6 +112,14 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to Hira API!" });
 });
 
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server running",
+  });
+});
+
 // Global error handler
 app.use(errorHandler);
 
@@ -107,8 +132,8 @@ mongoose
   .then(() => {
     console.log("Connected to MongoDB successfully!");
     // Start the server only after DB connection is successful
-    server.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
+    server.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((error) => {

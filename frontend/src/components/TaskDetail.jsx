@@ -242,7 +242,7 @@ function TaskDetail({ task, onClose, onUpdate }) {
                     <div className="flex items-center gap-3 overflow-hidden">
                       {renderAttachmentIcon(file.fileType)}
                       <a 
-                        href={`http://localhost:5000${file.fileUrl}`} 
+                        href={`${import.meta.env.VITE_API_URL}${file.fileUrl}`} 
                         target="_blank" 
                         rel="noreferrer"
                         className="text-sm text-[#f1f5f9] hover:text-[#6366f1] hover:underline truncate"
