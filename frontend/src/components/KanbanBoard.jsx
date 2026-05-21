@@ -53,7 +53,7 @@ function KanbanBoard({ tasks, onStatusChange }) {
   };
 
   return (
-    <div className="flex h-full min-h-[600px] overflow-x-auto pb-4 gap-6 custom-scrollbar animate-fade-in">
+    <div className="flex flex-col md:flex-row h-full min-h-[600px] md:overflow-x-auto pb-4 gap-6 custom-scrollbar animate-fade-in">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}

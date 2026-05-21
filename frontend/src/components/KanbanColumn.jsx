@@ -8,7 +8,7 @@ function KanbanColumn({ id, title, tasks, color }) {
   });
 
   return (
-    <div className="flex flex-col flex-shrink-0 w-80 bg-[#1e293b] rounded-2xl border border-[#334155] overflow-hidden">
+    <div className="flex flex-col w-full md:w-80 md:flex-shrink-0 bg-[#1e293b] rounded-2xl border border-[#334155] overflow-hidden">
       <div className="p-4 border-b border-[#334155] bg-[#0f172a] flex items-center justify-between sticky top-0 z-10">
         <h3 className="font-semibold text-white flex items-center gap-2">
           <span className={`w-2.5 h-2.5 rounded-full ${color}`}></span>

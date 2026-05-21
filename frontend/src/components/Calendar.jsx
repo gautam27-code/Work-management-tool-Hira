@@ -52,6 +52,16 @@ function Calendar({ tasks, onEventClick }) {
           font-weight: 700;
           color: #f1f5f9;
         }
+        @media (max-width: 640px) {
+          .calendar-container .fc-toolbar {
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+          }
+          .calendar-container .fc-toolbar-title {
+            font-size: 1.1rem !important;
+          }
+        }
       `}} />
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

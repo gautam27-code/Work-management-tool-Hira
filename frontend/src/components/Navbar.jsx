@@ -8,7 +8,7 @@
 
 import NotificationDropdown from "./NotificationDropdown";
 
-function Navbar({ user, onLogout }) {
+function Navbar({ user, onLogout, onToggleSidebar }) {
   // Get the first letter of the user's name for the avatar
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : "?";
 
@@ -18,6 +18,17 @@ function Navbar({ user, onLogout }) {
         <div className="flex items-center justify-between h-16">
           {/* App Name / Logo */}
           <div className="flex items-center gap-3">
+            {onToggleSidebar && (
+              <button
+                onClick={onToggleSidebar}
+                className="lg:hidden p-2 rounded-xl hover:bg-[#334155] text-[#94a3b8] hover:text-white transition-colors cursor-pointer mr-1"
+                title="Toggle Sidebar"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            )}
             {/* Logo icon */}
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#6366f1] to-[#06b6d4] flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <span className="text-white font-bold text-lg">H</span>

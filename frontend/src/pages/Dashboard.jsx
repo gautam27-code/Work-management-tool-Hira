@@ -21,6 +21,7 @@ function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   const fetchData = async (silent = false) => {
     try {
@@ -61,16 +62,48 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col">
-      <Navbar user={user} onLogout={handleLogout} />
+      <Navbar user={user} onLogout={handleLogout} onToggleSidebar={() => setShowMobileSidebar(true)} />
 
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar 
-          teams={teams} 
-          pendingInvites={pendingInvites} 
-          onJoinTeam={handleJoinTeam}
-          onCreateTeam={() => setShowCreateTeam(true)}
-          onSelectTeam={(teamId) => navigate(`/team/${teamId}`)}
-        />
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Sidebar Container */}
+        <div className={`
+          fixed inset-y-0 left-0 z-40 w-72 bg-[#1e293b]/95 backdrop-blur-md p-5 border-r border-[#334155] transform transition-transform duration-300 lg:static lg:w-64 lg:translate-x-0 lg:bg-transparent lg:border-r-0 lg:p-0 shrink-0 overflow-y-auto
+          ${showMobileSidebar ? "translate-x-0" : "-translate-x-full"}
+        `}>
+          {/* Close button inside sidebar on mobile */}
+          <div className="flex justify-end lg:hidden mb-4">
+            <button
+              onClick={() => setShowMobileSidebar(false)}
+              className="p-2 rounded-xl hover:bg-[#334155] text-[#94a3b8] hover:text-white transition-colors cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <Sidebar 
+            teams={teams} 
+            pendingInvites={pendingInvites} 
+            onJoinTeam={handleJoinTeam}
+            onCreateTeam={() => {
+              setShowCreateTeam(true);
+              setShowMobileSidebar(false);
+            }}
+            onSelectTeam={(teamId) => {
+              navigate(`/team/${teamId}`);
+              setShowMobileSidebar(false);
+            }}
+          />
+        </div>
+
+        {/* Mobile Sidebar Backdrop */}
+        {showMobileSidebar && (
+          <div 
+            onClick={() => setShowMobileSidebar(false)}
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden animate-fade-in"
+          />
+        )}
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
