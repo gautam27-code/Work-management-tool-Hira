@@ -22,8 +22,15 @@ const teamSchema = new mongoose.Schema(
     // All members of the team (includes the owner)
     members: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        role: {
+          type: String,
+          enum: ["admin", "member"],
+          default: "member",
+        },
       },
     ],
 

@@ -25,11 +25,11 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Team name is required" });
     }
 
-    // Create the team with the logged-in user as owner and first member
+    // Create the team with the logged-in user as owner and first member (admin)
     const team = await Team.create({
       name: name.trim(),
       owner: req.user._id,
-      members: [req.user._id],
+      members: [{ user: req.user._id, role: "admin" }],
     });
 
     // Also add this team to the user's teams array
@@ -40,7 +40,7 @@ router.post("/", async (req, res) => {
     // Populate owner and members before sending back
     const populatedTeam = await Team.findById(team._id)
       .populate("owner", "name email")
-      .populate("members", "name email");
+      .populate("members.user", "name email");
 
     res.status(201).json(populatedTeam);
   } catch (error) {
@@ -53,9 +53,11 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     // Find teams where the user is in the members array
-    const teams = await Team.find({ members: req.user._id })
+    const teams = await Team.find({
+      $or: [{ members: req.user._id }, { "members.user": req.user._id }]
+    })
       .populate("owner", "name email")
-      .populate("members", "name email")
+      .populate("members.user", "name email")
       .sort({ createdAt: -1 });
 
     res.json(teams);
@@ -81,9 +83,10 @@ router.post("/invite", async (req, res) => {
       return res.status(404).json({ message: "Team not found" });
     }
 
-    // Only team members can invite others
-    if (!team.members.includes(req.user._id)) {
-      return res.status(403).json({ message: "You are not a member of this team" });
+    // Only admins can invite others
+    const userMember = team.members.find(m => m.user?.toString() === req.user._id.toString() || m.toString() === req.user._id.toString());
+    if (!userMember || userMember.role !== "admin") {
+      return res.status(403).json({ message: "Only team admins can invite new members" });
     }
 
     // Check if this email is already invited
@@ -94,8 +97,11 @@ router.post("/invite", async (req, res) => {
 
     // Check if this user is already a member
     const existingUser = await User.findOne({ email: normalizedEmail });
-    if (existingUser && team.members.includes(existingUser._id)) {
-      return res.status(400).json({ message: "This user is already a team member" });
+    if (existingUser) {
+      const alreadyMember = team.members.some(m => m.toString() === existingUser._id.toString() || (m.user && m.user.toString() === existingUser._id.toString()));
+      if (alreadyMember) {
+        return res.status(400).json({ message: "This user is already a team member" });
+      }
     }
 
     // Add email to the invite list
@@ -125,7 +131,8 @@ router.post("/join", async (req, res) => {
     }
 
     // Check if user is already a member
-    if (team.members.includes(req.user._id)) {
+    const alreadyMember = team.members.some(m => m.toString() === req.user._id.toString() || (m.user && m.user.toString() === req.user._id.toString()));
+    if (alreadyMember) {
       return res.status(400).json({ message: "You are already a member of this team" });
     }
 
@@ -135,8 +142,8 @@ router.post("/join", async (req, res) => {
       return res.status(403).json({ message: "You have not been invited to this team" });
     }
 
-    // Add user to team members
-    team.members.push(req.user._id);
+    // Add user to team members as 'member'
+    team.members.push({ user: req.user._id, role: "member" });
 
     // Remove the email from inviteEmails (they've joined now)
     team.inviteEmails = team.inviteEmails.filter((e) => e !== userEmail);
@@ -150,7 +157,7 @@ router.post("/join", async (req, res) => {
     // Return populated team
     const populatedTeam = await Team.findById(team._id)
       .populate("owner", "name email")
-      .populate("members", "name email");
+      .populate("members.user", "name email");
 
     res.json(populatedTeam);
   } catch (error) {
@@ -170,6 +177,39 @@ router.get("/pending", async (req, res) => {
       .select("name owner createdAt");
 
     res.json(teams);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ---- DELETE /api/teams/:teamId/members/:userId ----
+// Remove a member from the team (admin only)
+router.delete("/:teamId/members/:userId", async (req, res) => {
+  try {
+    const { teamId, userId } = req.params;
+
+    const team = await Team.findById(teamId);
+    if (!team) return res.status(404).json({ message: "Team not found" });
+
+    // Check if requester is admin
+    const requester = team.members.find(m => m.user?.toString() === req.user._id.toString() || m.toString() === req.user._id.toString());
+    if (!requester || requester.role !== "admin") {
+      return res.status(403).json({ message: "Only admins can remove members" });
+    }
+
+    // Check if trying to remove the owner (cannot remove owner)
+    if (team.owner.toString() === userId) {
+      return res.status(400).json({ message: "Cannot remove the team owner" });
+    }
+
+    // Remove member
+    team.members = team.members.filter(m => (m.user ? m.user.toString() : m.toString()) !== userId);
+    await team.save();
+
+    // Also remove team from user's teams array
+    await User.findByIdAndUpdate(userId, { $pull: { teams: teamId } });
+
+    res.json({ message: "Member removed" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

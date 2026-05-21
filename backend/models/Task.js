@@ -1,59 +1,64 @@
-// Each task belongs to a team, is created by a user,
-// and can be assigned to a specific team member.
-
 const mongoose = require("mongoose");
+
+const subtaskSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  completed: { type: Boolean, default: false }
+});
+
+const attachmentSchema = new mongoose.Schema({
+  fileName: String,
+  fileUrl: String,
+  fileType: String,
+  uploadedAt: { type: Date, default: Date.now }
+});
 
 const taskSchema = new mongoose.Schema(
   {
-    // Title of the task (required)
     title: {
       type: String,
       required: [true, "Task title is required"],
       trim: true,
     },
-
-    // Optional description
     description: {
       type: String,
       trim: true,
       default: "",
     },
-
-    // Deadline for the task
     deadline: {
       type: Date,
       default: null,
     },
-
-    // Progress percentage (0-100)
     progress: {
       type: Number,
       default: 0,
       min: 0,
       max: 100,
     },
-
-    // Whether the task is completed
-    completed: {
-      type: Boolean,
-      default: false,
+    
+    // New fields
+    priority: { 
+      type: String, 
+      enum: ["low", "medium", "high", "critical"], 
+      default: "medium" 
     },
+    status: { 
+      type: String, 
+      enum: ["todo", "in_progress", "review", "done"], 
+      default: "todo" 
+    },
+    subtasks: [subtaskSchema],
+    attachments: [attachmentSchema],
 
-    // Which team this task belongs to (required)
     team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Team",
       required: [true, "Task must belong to a team"],
     },
-
-    // Which user this task is assigned to (optional)
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
-    // Who created this task
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -61,11 +66,16 @@ const taskSchema = new mongoose.Schema(
     },
   },
   {
-    // Automatically add createdAt and updatedAt timestamps
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
   }
 );
 
-const Task = mongoose.model("Task", taskSchema);
+// Virtual property for backward compatibility
+taskSchema.virtual('completed').get(function() {
+  return this.status === 'done';
+});
 
+const Task = mongoose.model("Task", taskSchema);
 module.exports = Task;

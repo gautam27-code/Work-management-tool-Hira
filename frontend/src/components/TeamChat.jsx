@@ -13,7 +13,7 @@ function TeamChat({ teamId, messages, onSend }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
-
+  
   // Get current user from localStorage to highlight own messages
   const user = JSON.parse(localStorage.getItem("user"));
 

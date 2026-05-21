@@ -27,7 +27,8 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ message: "Team not found" });
     }
 
-    if (!team.members.includes(req.user._id)) {
+    const isMember = team.members.some(m => m.toString() === req.user._id.toString() || (m.user && m.user.toString() === req.user._id.toString()));
+    if (!isMember) {
       return res.status(403).json({ message: "You are not a member of this team" });
     }
 
@@ -43,6 +44,11 @@ router.post("/", async (req, res) => {
       "sender",
       "name email"
     );
+
+    // Emit real-time event
+    if (req.io) {
+      req.io.to(teamId.toString()).emit("message:new", populatedMessage);
+    }
 
     res.status(201).json(populatedMessage);
   } catch (error) {
@@ -62,7 +68,8 @@ router.get("/:teamId", async (req, res) => {
       return res.status(404).json({ message: "Team not found" });
     }
 
-    if (!team.members.includes(req.user._id)) {
+    const isMember = team.members.some(m => m.toString() === req.user._id.toString() || (m.user && m.user.toString() === req.user._id.toString()));
+    if (!isMember) {
       return res.status(403).json({ message: "You are not a member of this team" });
     }
 

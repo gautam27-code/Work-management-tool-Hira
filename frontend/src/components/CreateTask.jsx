@@ -1,29 +1,35 @@
 // ============================
 // CreateTask Component (Team-Scoped)
 // ============================
-// Modal form to create a new task inside a team.
-// Props:
-//   onClose       - function to close the modal
-//   onTaskCreated - function called after a task is created
-//   teamId        - the team this task belongs to
-//   members       - array of team members for the "Assign To" dropdown
 
 import { useState } from "react";
-
-const API_URL = "http://localhost:5000/api/tasks";
+import { apiPost } from "../services/api";
 
 function CreateTask({ onClose, onTaskCreated, teamId, members }) {
-  // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [assignedTo, setAssignedTo] = useState(""); // UserId or empty
+  const [priority, setPriority] = useState("medium");
+  const [status, setStatus] = useState("todo");
+  const [assignedTo, setAssignedTo] = useState("");
+  
+  // Subtasks state
+  const [subtasks, setSubtasks] = useState([]);
+  const [newSubtask, setNewSubtask] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Get token from localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
+  const handleAddSubtask = () => {
+    if (newSubtask.trim()) {
+      setSubtasks([...subtasks, { title: newSubtask.trim(), completed: false }]);
+      setNewSubtask("");
+    }
+  };
+
+  const handleRemoveSubtask = (index) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,28 +43,17 @@ function CreateTask({ onClose, onTaskCreated, teamId, members }) {
     setLoading(true);
 
     try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          deadline,
-          progress,
-          teamId,
-          assignedTo: assignedTo || null,
-        }),
+      const newTask = await apiPost("/tasks", {
+        title,
+        description,
+        deadline,
+        priority,
+        status,
+        subtasks,
+        teamId,
+        assignedTo: assignedTo || null,
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to create task");
-      }
-
-      const newTask = await response.json();
       onTaskCreated(newTask);
       onClose();
     } catch (err) {
@@ -74,11 +69,10 @@ function CreateTask({ onClose, onTaskCreated, teamId, members }) {
       onClick={onClose}
     >
       <div
-        className="bg-[#1e293b] rounded-2xl border border-[#334155] w-full max-w-lg mx-4 shadow-2xl shadow-black/40 animate-fade-in"
+        className="bg-[#1e293b] rounded-2xl border border-[#334155] w-full max-w-lg mx-4 shadow-2xl shadow-black/40 animate-scale-in max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#334155]">
+        <div className="sticky top-0 bg-[#1e293b] z-10 flex items-center justify-between p-6 border-b border-[#334155]">
           <div>
             <h2 className="text-xl font-bold text-white">Create New Task</h2>
             <p className="text-sm text-[#94a3b8] mt-1">Add a task to your team</p>
@@ -93,16 +87,13 @@ function CreateTask({ onClose, onTaskCreated, teamId, members }) {
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Error */}
           {error && (
             <div className="p-3 rounded-xl bg-[#ef4444]/10 border border-[#ef4444]/20 text-[#ef4444] text-sm">
               {error}
             </div>
           )}
 
-          {/* Title */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-[#94a3b8]">
               Title <span className="text-[#ef4444]">*</span>
@@ -116,7 +107,6 @@ function CreateTask({ onClose, onTaskCreated, teamId, members }) {
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-[#94a3b8]">Description</label>
             <textarea
@@ -128,9 +118,7 @@ function CreateTask({ onClose, onTaskCreated, teamId, members }) {
             />
           </div>
 
-          {/* Deadline & Assign To Row */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Deadline */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-[#94a3b8]">Deadline</label>
               <input
@@ -140,8 +128,6 @@ function CreateTask({ onClose, onTaskCreated, teamId, members }) {
                 className="w-full px-4 py-3 rounded-xl bg-[#0f172a] border border-[#334155] text-white focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] transition-colors [color-scheme:dark]"
               />
             </div>
-
-            {/* Assign To Dropdown */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-[#94a3b8]">Assign To</label>
               <select
@@ -150,52 +136,86 @@ function CreateTask({ onClose, onTaskCreated, teamId, members }) {
                 className="w-full px-4 py-3 rounded-xl bg-[#0f172a] border border-[#334155] text-white focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] transition-colors appearance-none cursor-pointer"
               >
                 <option value="">Unassigned</option>
-                {members &&
-                  members.map((member) => (
-                    <option key={member._id} value={member._id}>
-                      {member.name}
-                    </option>
-                  ))}
+                {members && members.map((member) => (
+                  <option key={member._id} value={member._id}>{member.name}</option>
+                ))}
               </select>
             </div>
           </div>
 
-          {/* Progress */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#94a3b8]">
-              Progress ({progress}%)
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={progress}
-              onChange={(e) => setProgress(Number(e.target.value))}
-              className="w-full h-2 bg-[#334155] rounded-full appearance-none cursor-pointer
-                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#6366f1]
-                [&::-webkit-slider-thumb]:hover:bg-[#818cf8] [&::-webkit-slider-thumb]:transition-colors
-                [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-indigo-500/30"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#94a3b8]">Priority</label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-[#0f172a] border border-[#334155] text-white focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] transition-colors appearance-none cursor-pointer"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#94a3b8]">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-[#0f172a] border border-[#334155] text-white focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] transition-colors appearance-none cursor-pointer"
+              >
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="review">Review</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
           </div>
 
-          {/* Submit */}
+          {/* Subtasks */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-[#94a3b8]">Subtasks</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newSubtask}
+                onChange={(e) => setNewSubtask(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSubtask())}
+                placeholder="Add a subtask..."
+                className="flex-1 px-4 py-2 rounded-xl bg-[#0f172a] border border-[#334155] text-white placeholder-[#64748b] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] transition-colors text-sm"
+              />
+              <button
+                type="button"
+                onClick={handleAddSubtask}
+                className="px-4 py-2 rounded-xl bg-[#334155] text-white font-medium text-sm hover:bg-[#475569] transition-colors cursor-pointer"
+              >
+                Add
+              </button>
+            </div>
+            {subtasks.length > 0 && (
+              <ul className="space-y-2 mt-2">
+                {subtasks.map((st, i) => (
+                  <li key={i} className="flex items-center justify-between bg-[#0f172a] px-3 py-2 rounded-lg border border-[#334155]">
+                    <span className="text-sm text-white">{st.title}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSubtask(i)}
+                      className="text-[#ef4444] hover:text-[#f87171] p-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#4f46e5] hover:from-[#818cf8] hover:to-[#6366f1] text-white font-semibold transition-all duration-300 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full py-3 mt-4 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#4f46e5] hover:from-[#818cf8] hover:to-[#6366f1] text-white font-semibold transition-all duration-300 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Creating...
-              </span>
-            ) : (
-              "Create Task"
-            )}
+            {loading ? "Creating..." : "Create Task"}
           </button>
         </form>
       </div>

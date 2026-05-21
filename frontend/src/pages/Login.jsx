@@ -6,12 +6,14 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import useStore from "../store/store";
 
 // Backend auth URL
 const API_URL = "http://localhost:5000/api/auth";
 
 function Login() {
   const navigate = useNavigate();
+  const setUser = useStore(state => state.setUser);
 
   // Form state
   const [email, setEmail] = useState("");
@@ -48,6 +50,7 @@ function Login() {
 
       // Save user data and token to localStorage
       localStorage.setItem("user", JSON.stringify(data));
+      setUser(data);
 
       // Redirect to dashboard
       navigate("/");

@@ -6,12 +6,14 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import useStore from "../store/store";
 
 // Backend auth URL
 const API_URL = "http://localhost:5000/api/auth";
 
 function Signup() {
   const navigate = useNavigate();
+  const setUser = useStore(state => state.setUser);
 
   // Form state
   const [name, setName] = useState("");
@@ -60,6 +62,7 @@ function Signup() {
 
       // Save user data and token to localStorage
       localStorage.setItem("user", JSON.stringify(data));
+      setUser(data);
 
       // Redirect to dashboard
       navigate("/");
@@ -115,7 +118,7 @@ function Signup() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
+                placeholder="User Name"
                 className="w-full px-4 py-3 rounded-xl bg-[#0f172a] border border-[#334155] text-white placeholder-[#475569] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] transition-all"
               />
             </div>

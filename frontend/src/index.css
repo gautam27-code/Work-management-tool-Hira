@@ -20,6 +20,17 @@
     --color-border: #334155;
     --color-text: #f1f5f9;
     --color-text-muted: #94a3b8;
+    
+    /* New status & priority colors */
+    --color-priority-low: #94a3b8;
+    --color-priority-medium: #3b82f6;
+    --color-priority-high: #f97316;
+    --color-priority-critical: #ef4444;
+    
+    --color-status-todo: #94a3b8;
+    --color-status-in-progress: #3b82f6;
+    --color-status-review: #f59e0b;
+    --color-status-done: #10b981;
   }
 
   * {
@@ -59,9 +70,24 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2); }
   50% { box-shadow: 0 0 20px 4px rgba(99, 102, 241, 0.15); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
 }
 
 .animate-fade-in {
@@ -72,6 +98,20 @@
   animation: slideIn 0.3s ease-out forwards;
 }
 
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out forwards;
+}
+
 .pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-border) 50%, var(--color-surface) 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
 }
